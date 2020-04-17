@@ -56,7 +56,7 @@ func (s DefaultSession) RequiredSession(f func(*gin.Context, string)) func(*gin.
 			c.Status(http.StatusForbidden)
 			return
 		}
-		f(c, *token)
+		f(c, token)
 	}
 }
 
@@ -80,7 +80,7 @@ func (s DefaultSession) OptionalRequiredSession(f func(*gin.Context, *string)) f
 			c.Status(http.StatusForbidden)
 			return
 		}
-		f(c, token)
+		f(c, &token)
 	}
 }
 

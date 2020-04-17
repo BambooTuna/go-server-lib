@@ -13,9 +13,9 @@ func (r RedisSessionStorageDao) Store(key, value string, expiration time.Duratio
 	return r.Client.Set(key, value, expiration).Err()
 }
 
-func (r RedisSessionStorageDao) Find(key string) (*string, error) {
+func (r RedisSessionStorageDao) Find(key string) (string, error) {
 	result, err := r.Client.Get(key).Result()
-	return &result, err
+	return result, err
 }
 
 func (r RedisSessionStorageDao) Remove(key string) error {

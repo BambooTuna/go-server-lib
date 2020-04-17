@@ -15,13 +15,13 @@ func (r InmemorySessionStorageDao) Store(key, value string, expiration time.Dura
 	return nil
 }
 
-func (r InmemorySessionStorageDao) Find(key string) (*string, error) {
+func (r InmemorySessionStorageDao) Find(key string) (string, error) {
 	println("Find: " + key)
 	result, exist := r.Data[key]
 	if !exist {
-		return nil, errors.New("forbidden")
+		return "", errors.New("forbidden")
 	}
-	return &result, nil
+	return result, nil
 }
 
 func (r InmemorySessionStorageDao) Remove(key string) error {
