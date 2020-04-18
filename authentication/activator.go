@@ -27,6 +27,7 @@ func (a Activator) Activate(code string) (string, error) {
 	if id, err := a.SessionStorageDao.Find(code); err != nil {
 		return "", err
 	} else {
+		a.SessionStorageDao.Remove(code)
 		return id, nil
 	}
 }
