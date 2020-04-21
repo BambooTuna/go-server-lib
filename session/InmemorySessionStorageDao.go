@@ -29,3 +29,7 @@ func (r InmemorySessionStorageDao) Remove(key string) error {
 	delete(r.Data, key)
 	return nil
 }
+
+func (r InmemorySessionStorageDao) Refresh(key string, expiration time.Duration) error {
+	return nil
+}
