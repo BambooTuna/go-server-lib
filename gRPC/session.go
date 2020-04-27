@@ -2,6 +2,7 @@ package gRPC
 
 import (
 	"context"
+	"encoding/json"
 	session "github.com/BambooTuna/go-server-lib/session_v2"
 	"github.com/dgrijalva/jwt-go"
 	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
@@ -14,6 +15,22 @@ import (
 type Session struct {
 	Dao      session.SessionStorageDao
 	Settings session.SessionSettings
+}
+
+func (s Session) Decode(data string, out interface{}) error {
+	err := json.Unmarshal([]byte(data), &out)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s Session) Encode(in interface{}) string {
+	r, err := json.Marshal(in)
+	if err != nil {
+		return ""
+	}
+	return string(r)
 }
 
 func (s Session) SetSessionData(ctx context.Context, data string) (string, error) {
