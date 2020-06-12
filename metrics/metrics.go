@@ -8,7 +8,7 @@ import (
 
 type Metrics struct {
 	namespace string
-	metrics   sync.Map
+	metrics   *sync.Map
 }
 
 func CreateMetrics(namespace string) Metrics {
@@ -41,7 +41,7 @@ func (m *Metrics) Counter(name string, label map[string]string) prometheus.Count
 	return c
 }
 
-func (m Metrics) Gauge(name string, label map[string]string) prometheus.Gauge {
+func (m *Metrics) Gauge(name string, label map[string]string) prometheus.Gauge {
 	key := createKey(name, label)
 	if value, ok := m.metrics.Load(key); ok {
 		switch value := value.(type) {
@@ -59,7 +59,7 @@ func (m Metrics) Gauge(name string, label map[string]string) prometheus.Gauge {
 	return g
 }
 
-func (m Metrics) Histogram(name string, label map[string]string) prometheus.Histogram {
+func (m *Metrics) Histogram(name string, label map[string]string) prometheus.Histogram {
 	key := createKey(name, label)
 	if value, ok := m.metrics.Load(key); ok {
 		switch value := value.(type) {
@@ -77,7 +77,7 @@ func (m Metrics) Histogram(name string, label map[string]string) prometheus.Hist
 	return h
 }
 
-func (m Metrics) Summary(name string, label map[string]string) prometheus.Summary {
+func (m *Metrics) Summary(name string, label map[string]string) prometheus.Summary {
 	key := createKey(name, label)
 	if value, ok := m.metrics.Load(key); ok {
 		switch value := value.(type) {
@@ -95,7 +95,7 @@ func (m Metrics) Summary(name string, label map[string]string) prometheus.Summar
 	return s
 }
 
-func (m Metrics) Describe(ch chan<- *prometheus.Desc) {
+func (m *Metrics) Describe(ch chan<- *prometheus.Desc) {
 	m.metrics.Range(func(_, value interface{}) bool {
 		switch value := value.(type) {
 		case prometheus.Counter:
@@ -111,7 +111,7 @@ func (m Metrics) Describe(ch chan<- *prometheus.Desc) {
 	})
 }
 
-func (m Metrics) Collect(ch chan<- prometheus.Metric) {
+func (m *Metrics) Collect(ch chan<- prometheus.Metric) {
 	m.metrics.Range(func(_, value interface{}) bool {
 		switch value := value.(type) {
 		case prometheus.Counter:
