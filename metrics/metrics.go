@@ -19,7 +19,8 @@ func CreateMetrics(namespace string) Metrics {
 		Name:        "Metrics_Info",
 		Help:        "Metrics_Info help",
 		ConstLabels: map[string]string{"version": "1.0.0"},
-	}).Inc
+	})
+	info.Inc()
 	return Metrics{namespace: namespace, counter: map[string]prometheus.Counter{"Metrics_Info": info}, gauge: make(map[string]prometheus.Gauge), histogram: make(map[string]prometheus.Histogram), summary: make(map[string]prometheus.Summary)}
 }
 
