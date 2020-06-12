@@ -12,7 +12,7 @@ type Metrics struct {
 }
 
 func CreateMetrics(namespace string) Metrics {
-	return Metrics{namespace: namespace}
+	return Metrics{namespace: namespace, metrics: new(sync.Map)}
 }
 
 func createKey(name string, label map[string]string) string {
@@ -37,7 +37,7 @@ func (m *Metrics) Counter(name string, label map[string]string) prometheus.Count
 		Help:        name + " help",
 		ConstLabels: label,
 	})
-	m.metrics.Store(key, &c)
+	m.metrics.Store(key, c)
 	return c
 }
 
@@ -55,7 +55,7 @@ func (m *Metrics) Gauge(name string, label map[string]string) prometheus.Gauge {
 		Help:        name + " help",
 		ConstLabels: label,
 	})
-	m.metrics.Store(key, &g)
+	m.metrics.Store(key, g)
 	return g
 }
 
@@ -73,7 +73,7 @@ func (m *Metrics) Histogram(name string, label map[string]string) prometheus.His
 		Help:        name + " help",
 		ConstLabels: label,
 	})
-	m.metrics.Store(key, &h)
+	m.metrics.Store(key, h)
 	return h
 }
 
@@ -91,7 +91,7 @@ func (m *Metrics) Summary(name string, label map[string]string) prometheus.Summa
 		Help:        name + " help",
 		ConstLabels: label,
 	})
-	m.metrics.Store(key, &s)
+	m.metrics.Store(key, s)
 	return s
 }
 
