@@ -25,10 +25,10 @@ func createKey(name string, label map[string]string) string {
 	return name + string(bytes)
 }
 
-func (m *Metrics) Counter(name string, label map[string]string) *prometheus.Counter {
+func (m *Metrics) Counter(name string, label map[string]string) prometheus.Counter {
 	key := createKey(name, label)
 	if value, ok := m.counter[key]; ok {
-		return value
+		return *value
 	}
 	c := prometheus.NewCounter(prometheus.CounterOpts{
 		Namespace:   m.namespace,
@@ -37,13 +37,13 @@ func (m *Metrics) Counter(name string, label map[string]string) *prometheus.Coun
 		ConstLabels: label,
 	})
 	m.counter[key] = &c
-	return &c
+	return c
 }
 
-func (m Metrics) Gauge(name string, label map[string]string) *prometheus.Gauge {
+func (m Metrics) Gauge(name string, label map[string]string) prometheus.Gauge {
 	key := createKey(name, label)
 	if value, ok := m.gauge[key]; ok {
-		return value
+		return *value
 	}
 	g := prometheus.NewGauge(prometheus.GaugeOpts{
 		Namespace:   m.namespace,
@@ -52,13 +52,13 @@ func (m Metrics) Gauge(name string, label map[string]string) *prometheus.Gauge {
 		ConstLabels: label,
 	})
 	m.gauge[key] = &g
-	return &g
+	return g
 }
 
-func (m Metrics) Histogram(name string, label map[string]string) *prometheus.Histogram {
+func (m Metrics) Histogram(name string, label map[string]string) prometheus.Histogram {
 	key := createKey(name, label)
 	if value, ok := m.histogram[key]; ok {
-		return value
+		return *value
 	}
 	h := prometheus.NewHistogram(prometheus.HistogramOpts{
 		Namespace:   m.namespace,
@@ -67,13 +67,13 @@ func (m Metrics) Histogram(name string, label map[string]string) *prometheus.His
 		ConstLabels: label,
 	})
 	m.histogram[key] = &h
-	return &h
+	return h
 }
 
-func (m Metrics) Summary(name string, label map[string]string) *prometheus.Summary {
+func (m Metrics) Summary(name string, label map[string]string) prometheus.Summary {
 	key := createKey(name, label)
 	if value, ok := m.summary[key]; ok {
-		return value
+		return *value
 	}
 	s := prometheus.NewSummary(prometheus.SummaryOpts{
 		Namespace:   m.namespace,
@@ -82,7 +82,7 @@ func (m Metrics) Summary(name string, label map[string]string) *prometheus.Summa
 		ConstLabels: label,
 	})
 	m.summary[key] = &s
-	return &s
+	return s
 }
 
 func (m Metrics) Describe(ch chan<- *prometheus.Desc) {
