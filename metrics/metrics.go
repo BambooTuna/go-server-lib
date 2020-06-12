@@ -1,6 +1,9 @@
 package metrics
 
-import "github.com/prometheus/client_golang/prometheus"
+import (
+	"encoding/json"
+	"github.com/prometheus/client_golang/prometheus"
+)
 
 type Metrics struct {
 	namespace string
@@ -14,8 +17,17 @@ func CreateMetrics(namespace string) Metrics {
 	return Metrics{namespace: namespace, counter: make(map[string]prometheus.Counter), gauge: make(map[string]prometheus.Gauge)}
 }
 
+func createKey(name string, label map[string]string) string {
+	bytes, err := json.Marshal(label)
+	if err != nil {
+		return name
+	}
+	return name + string(bytes)
+}
+
 func (m *Metrics) Counter(name string, label map[string]string) prometheus.Counter {
-	if value, ok := m.counter[name]; ok {
+	key := createKey(name, label)
+	if value, ok := m.counter[key]; ok {
 		return value
 	}
 	c := prometheus.NewCounter(prometheus.CounterOpts{
@@ -24,12 +36,13 @@ func (m *Metrics) Counter(name string, label map[string]string) prometheus.Count
 		Help:        name + " help",
 		ConstLabels: label,
 	})
-	m.counter[name] = c
+	m.counter[key] = c
 	return c
 }
 
 func (m Metrics) Gauge(name string, label map[string]string) prometheus.Gauge {
-	if value, ok := m.gauge[name]; ok {
+	key := createKey(name, label)
+	if value, ok := m.gauge[key]; ok {
 		return value
 	}
 	g := prometheus.NewGauge(prometheus.GaugeOpts{
@@ -38,12 +51,13 @@ func (m Metrics) Gauge(name string, label map[string]string) prometheus.Gauge {
 		Help:        name + " help",
 		ConstLabels: label,
 	})
-	m.gauge[name] = g
+	m.gauge[key] = g
 	return g
 }
 
 func (m Metrics) Histogram(name string, label map[string]string) prometheus.Histogram {
-	if value, ok := m.histogram[name]; ok {
+	key := createKey(name, label)
+	if value, ok := m.histogram[key]; ok {
 		return value
 	}
 	h := prometheus.NewHistogram(prometheus.HistogramOpts{
@@ -52,12 +66,13 @@ func (m Metrics) Histogram(name string, label map[string]string) prometheus.Hist
 		Help:        name + " help",
 		ConstLabels: label,
 	})
-	m.histogram[name] = h
+	m.histogram[key] = h
 	return h
 }
 
 func (m Metrics) Summary(name string, label map[string]string) prometheus.Summary {
-	if value, ok := m.summary[name]; ok {
+	key := createKey(name, label)
+	if value, ok := m.summary[key]; ok {
 		return value
 	}
 	s := prometheus.NewSummary(prometheus.SummaryOpts{
@@ -66,7 +81,7 @@ func (m Metrics) Summary(name string, label map[string]string) prometheus.Summar
 		Help:        name + " help",
 		ConstLabels: label,
 	})
-	m.summary[name] = s
+	m.summary[key] = s
 	return s
 }
 
