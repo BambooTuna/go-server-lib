@@ -1,35 +1,22 @@
 package metrics
 
-import (
-	"encoding/json"
-	"github.com/prometheus/client_golang/prometheus"
-	"sync"
-)
+import "github.com/prometheus/client_golang/prometheus"
 
 type Metrics struct {
 	namespace string
-	metrics   *sync.Map
+	counter   map[string]prometheus.Counter
+	gauge     map[string]prometheus.Gauge
+	histogram map[string]prometheus.Histogram
+	summary   map[string]prometheus.Summary
 }
 
 func CreateMetrics(namespace string) Metrics {
-	return Metrics{namespace: namespace, metrics: new(sync.Map)}
-}
-
-func createKey(name string, label map[string]string) string {
-	bytes, err := json.Marshal(label)
-	if err != nil {
-		return name
-	}
-	return name + string(bytes)
+	return Metrics{namespace: namespace, counter: make(map[string]prometheus.Counter), gauge: make(map[string]prometheus.Gauge)}
 }
 
 func (m *Metrics) Counter(name string, label map[string]string) prometheus.Counter {
-	key := createKey(name, label)
-	if value, ok := m.metrics.Load(key); ok {
-		switch value := value.(type) {
-		case prometheus.Counter:
-			return value
-		}
+	if value, ok := m.counter[name]; ok {
+		return value
 	}
 	c := prometheus.NewCounter(prometheus.CounterOpts{
 		Namespace:   m.namespace,
@@ -37,17 +24,13 @@ func (m *Metrics) Counter(name string, label map[string]string) prometheus.Count
 		Help:        name + " help",
 		ConstLabels: label,
 	})
-	m.metrics.Store(key, c)
+	m.counter[name] = c
 	return c
 }
 
-func (m *Metrics) Gauge(name string, label map[string]string) prometheus.Gauge {
-	key := createKey(name, label)
-	if value, ok := m.metrics.Load(key); ok {
-		switch value := value.(type) {
-		case prometheus.Gauge:
-			return value
-		}
+func (m Metrics) Gauge(name string, label map[string]string) prometheus.Gauge {
+	if value, ok := m.gauge[name]; ok {
+		return value
 	}
 	g := prometheus.NewGauge(prometheus.GaugeOpts{
 		Namespace:   m.namespace,
@@ -55,17 +38,13 @@ func (m *Metrics) Gauge(name string, label map[string]string) prometheus.Gauge {
 		Help:        name + " help",
 		ConstLabels: label,
 	})
-	m.metrics.Store(key, g)
+	m.gauge[name] = g
 	return g
 }
 
-func (m *Metrics) Histogram(name string, label map[string]string) prometheus.Histogram {
-	key := createKey(name, label)
-	if value, ok := m.metrics.Load(key); ok {
-		switch value := value.(type) {
-		case prometheus.Histogram:
-			return value
-		}
+func (m Metrics) Histogram(name string, label map[string]string) prometheus.Histogram {
+	if value, ok := m.histogram[name]; ok {
+		return value
 	}
 	h := prometheus.NewHistogram(prometheus.HistogramOpts{
 		Namespace:   m.namespace,
@@ -73,17 +52,13 @@ func (m *Metrics) Histogram(name string, label map[string]string) prometheus.His
 		Help:        name + " help",
 		ConstLabels: label,
 	})
-	m.metrics.Store(key, h)
+	m.histogram[name] = h
 	return h
 }
 
-func (m *Metrics) Summary(name string, label map[string]string) prometheus.Summary {
-	key := createKey(name, label)
-	if value, ok := m.metrics.Load(key); ok {
-		switch value := value.(type) {
-		case prometheus.Summary:
-			return value
-		}
+func (m Metrics) Summary(name string, label map[string]string) prometheus.Summary {
+	if value, ok := m.summary[name]; ok {
+		return value
 	}
 	s := prometheus.NewSummary(prometheus.SummaryOpts{
 		Namespace:   m.namespace,
@@ -91,38 +66,36 @@ func (m *Metrics) Summary(name string, label map[string]string) prometheus.Summa
 		Help:        name + " help",
 		ConstLabels: label,
 	})
-	m.metrics.Store(key, s)
+	m.summary[name] = s
 	return s
 }
 
-func (m *Metrics) Describe(ch chan<- *prometheus.Desc) {
-	m.metrics.Range(func(_, value interface{}) bool {
-		switch value := value.(type) {
-		case prometheus.Counter:
-			ch <- value.Desc()
-		case prometheus.Gauge:
-			ch <- value.Desc()
-		case prometheus.Histogram:
-			ch <- value.Desc()
-		case prometheus.Summary:
-			ch <- value.Desc()
-		}
-		return true
-	})
+func (m Metrics) Describe(ch chan<- *prometheus.Desc) {
+	for _, value := range m.counter {
+		ch <- value.Desc()
+	}
+	for _, value := range m.gauge {
+		ch <- value.Desc()
+	}
+	for _, value := range m.histogram {
+		ch <- value.Desc()
+	}
+	for _, value := range m.summary {
+		ch <- value.Desc()
+	}
 }
 
-func (m *Metrics) Collect(ch chan<- prometheus.Metric) {
-	m.metrics.Range(func(_, value interface{}) bool {
-		switch value := value.(type) {
-		case prometheus.Counter:
-			value.Collect(ch)
-		case prometheus.Gauge:
-			value.Collect(ch)
-		case prometheus.Histogram:
-			value.Collect(ch)
-		case prometheus.Summary:
-			value.Collect(ch)
-		}
-		return true
-	})
+func (m Metrics) Collect(ch chan<- prometheus.Metric) {
+	for _, value := range m.counter {
+		value.Collect(ch)
+	}
+	for _, value := range m.gauge {
+		value.Collect(ch)
+	}
+	for _, value := range m.histogram {
+		value.Collect(ch)
+	}
+	for _, value := range m.summary {
+		value.Collect(ch)
+	}
 }
