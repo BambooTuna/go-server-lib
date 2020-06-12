@@ -25,7 +25,6 @@ func createKey(name string, label map[string]string) string {
 
 func (m *Metrics) Counter(name string, label map[string]string) prometheus.Counter {
 	key := createKey(name, label)
-	println(key)
 	if value, ok := m.metrics.Load(key); ok {
 		switch value := value.(type) {
 		case prometheus.Counter:
