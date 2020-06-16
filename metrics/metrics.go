@@ -14,14 +14,7 @@ type Metrics struct {
 }
 
 func CreateMetrics(namespace string) Metrics {
-	info := prometheus.NewCounter(prometheus.CounterOpts{
-		Namespace:   namespace,
-		Name:        "Metrics_Info",
-		Help:        "Metrics_Info help",
-		ConstLabels: map[string]string{"version": "1.0.0"},
-	})
-	info.Inc()
-	return Metrics{namespace: namespace, counter: map[string]prometheus.Counter{"Metrics_Info": info}, gauge: make(map[string]prometheus.Gauge), histogram: make(map[string]prometheus.Histogram), summary: make(map[string]prometheus.Summary)}
+	return Metrics{namespace: namespace, counter: make(map[string]prometheus.Counter), gauge: make(map[string]prometheus.Gauge), histogram: make(map[string]prometheus.Histogram), summary: make(map[string]prometheus.Summary)}
 }
 
 func createKey(name string, label map[string]string) string {
